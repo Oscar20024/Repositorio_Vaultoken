@@ -1,31 +1,25 @@
-import { StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function HomeScreen() {
+  const router = useRouter();
 
-export default function TabOneScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>🔐 Vaultoken</Text>
+      <Text style={styles.subtitle}>Aprende ciberseguridad jugando</Text>
+
+      <Pressable style={styles.button} onPress={() => router.push('/login')}>
+        <Text style={styles.buttonText}>Empezar</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  container: { flex: 1, backgroundColor: '#58CC02', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  title: { fontSize: 36, fontWeight: 'bold', color: '#fff', marginBottom: 10 },
+  subtitle: { fontSize: 18, color: '#eaffd0', marginBottom: 40, textAlign: 'center' },
+  button: { backgroundColor: '#fff', paddingVertical: 15, paddingHorizontal: 50, borderRadius: 30, elevation: 4 },
+  buttonText: { color: '#58CC02', fontSize: 18, fontWeight: 'bold' },
 });
