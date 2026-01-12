@@ -2,6 +2,7 @@ import { supabase } from "@/service/supabase";
 import { playClick } from "@/utils/sound";
 import { Link, router } from "expo-router";
 import { useState } from "react";
+
 import {
   Alert,
   ImageBackground,
