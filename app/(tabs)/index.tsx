@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StatusBar, StyleSheet, Text, View } from "react-
 <Pressable onPress={playClick}>
   <Text>Empezar</Text>
 </Pressable>
-
+//cambio 13
 export default function Home() {
   const onPressX = async () => {
   await playClick();
