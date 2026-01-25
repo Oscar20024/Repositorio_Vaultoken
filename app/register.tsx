@@ -1,6 +1,15 @@
+import { playClick } from "@/utils/sound";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { supabase } from "../service/supabase";
 
 export default function Register() {
@@ -14,95 +23,143 @@ export default function Register() {
 
     setLoading(true);
 
-    // ✅ SOLO crea usuario. El perfil lo crea el TRIGGER.
     const { data, error } = await supabase.auth.signUp({
       email,
       password: pass,
-      options: {
-        data: { username }, // <- esto lo usa el trigger
-      },
+      options: { data: { username } },
     });
 
     setLoading(false);
 
     if (error) return Alert.alert("Error", error.message);
 
-    // Si confirmación por email está activa, session será null (normal)
     if (!data.session) {
       Alert.alert(
         "Revisa tu correo",
-        "Te enviamos un email para confirmar tu cuenta. Luego inicia sesión."
+        "Te enviamos un email para confirmar tu cuenta. Luego inicia sesión.",
       );
       return router.replace("/login");
     }
 
-    // Si NO hay confirmación por email, ya quedó logueado
     Alert.alert("Listo", "Cuenta creada");
     router.replace("/login");
   };
 
+  const onPressRegister = async () => {
+    await playClick(); // 🔊 sonido
+    await onRegister(); // 🔐 login
+  };
   return (
-    <View style={s.container}>
-      <View style={s.card}>
-        <Text style={s.title}>Crear cuenta</Text>
+    <ImageBackground
+      source={require("../assets/images/register-bg.png")} // ✅ misma imagen que Login
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <View style={styles.overlay}>
+        <Text style={styles.title}>Registrate</Text>
 
-        <Text style={s.label}>Usuario</Text>
         <TextInput
-          style={s.input}
+          placeholder="Usuario"
+          placeholderTextColor="#aaa"
           value={username}
           onChangeText={setUsername}
-          placeholder="oscar123"
-          placeholderTextColor="#999"
+          style={styles.input}
         />
 
-        <Text style={s.label}>Email</Text>
         <TextInput
-          style={s.input}
-          value={email}
-          onChangeText={setEmail}
+          placeholder="Email"
+          placeholderTextColor="#aaa"
           autoCapitalize="none"
           keyboardType="email-address"
-          placeholder="correo@..."
-          placeholderTextColor="#999"
+          value={email}
+          onChangeText={setEmail}
+          style={styles.input}
         />
 
-        <Text style={s.label}>Contraseña</Text>
         <TextInput
-          style={s.input}
+          placeholder="Contraseña"
+          placeholderTextColor="#aaa"
+          secureTextEntry
           value={pass}
           onChangeText={setPass}
-          secureTextEntry
-          placeholder="********"
-          placeholderTextColor="#999"
+          style={styles.input}
         />
 
         <Pressable
-          style={({ pressed }) => [s.btn, pressed && { opacity: 0.85 }, loading && { opacity: 0.6 }]}
-          onPress={onRegister}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && { opacity: 0.9 },
+            loading && { opacity: 0.6 },
+          ]}
+          onPress={onPressRegister}
           disabled={loading}
         >
-          <Text style={s.btnText}>{loading ? "Creando..." : "Registrarme"}</Text>
+          <Text style={styles.buttonText}>
+            {loading ? "Creando..." : "Registrarme"}
+          </Text>
         </Pressable>
 
-        <Text style={s.footer}>
+        <Text style={styles.registerText}>
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" style={s.link}>
+          <Link href="/login" style={styles.registerLink}>
             Inicia sesión
           </Link>
         </Text>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 18, backgroundColor: "#0b0f17" },
-  card: { backgroundColor: "#121a2a", borderRadius: 18, padding: 18, borderWidth: 1, borderColor: "#22304a" },
-  title: { color: "white", fontSize: 22, fontWeight: "700", marginBottom: 14 },
-  label: { color: "#cbd5e1", marginTop: 10, marginBottom: 6, fontSize: 13 },
-  input: { backgroundColor: "#0e1422", color: "white", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, borderWidth: 1, borderColor: "#22304a" },
-  btn: { marginTop: 16, backgroundColor: "#3b82f6", paddingVertical: 12, borderRadius: 12, alignItems: "center" },
-  btnText: { color: "white", fontWeight: "700" },
-  footer: { color: "#94a3b8", marginTop: 14, textAlign: "center" },
-  link: { color: "#60a5fa", fontWeight: "700" },
+const styles = StyleSheet.create({
+  background: { flex: 1 },
+
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.10)", // ✅ igual que tu Login (menos oscuro)
+    justifyContent: "center",
+    padding: 24,
+    paddingTop: 270, // ✅ baja todo un poco
+  },
+
+  title: {
+    fontSize: 34,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 30,
+  },
+
+  input: {
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    marginBottom: 15,
+  },
+
+  button: {
+    backgroundColor: "#ff751f", // ✅ naranja Canva
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  registerText: {
+    marginTop: 18,
+    color: "#eee",
+    textAlign: "center",
+    fontSize: 14,
+  },
+
+  registerLink: {
+    color: "#ff751f", // ✅ link naranja también
+    fontWeight: "bold",
+  },
 });

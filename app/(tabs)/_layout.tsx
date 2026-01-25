@@ -19,8 +19,8 @@ const TabButtonWithSound = (props: any) => {
     <Pressable
       {...props}
       onPress={async () => {
-        await playClick();   // 🔊 sonido
-        props.onPress?.();   // 👉 navegación normal
+        await playClick(); // 🔊 sonido
+        props.onPress?.(); // 👉 navegación normal
       }}
     />
   );
@@ -42,39 +42,37 @@ export default function TabLayout() {
   // Mientras valida sesión, no renderiza nada
   if (checking) return null;
 
-
-
-
   return (
-    
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
       }}
     >
-    <Tabs.Screen
-  name="index"
-  options={{
-    title: "Inicio",
-    tabBarButton: (props) => <TabButtonWithSound {...props} />,
-    tabBarIcon: ({ color }) => (
-      <TabBarIcon name="home" color={color} />
-    ),
-  }}
-/>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Inicio",
+          tabBarButton: (props) => <TabButtonWithSound {...props} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+        }}
+      />
 
       <Tabs.Screen
-  name="perfil"
-  options={{
-    title: "Perfil",
-    tabBarButton: (props) => <TabButtonWithSound {...props} />,
-    tabBarIcon: ({ color }) => (
-      <TabBarIcon name="user" color={color} />
-    ),
-  }}
-/>
-
+        name="perfil"
+        options={{
+          title: "Perfil",
+          tabBarButton: (props) => <TabButtonWithSound {...props} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="post-login"
+        options={{
+          href: null, // ✅ no aparece como tab
+          tabBarStyle: { display: "none" }, // ✅ oculta barra
+        }}
+      />
     </Tabs>
   );
 }

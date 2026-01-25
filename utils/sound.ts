@@ -1,8 +1,12 @@
 import { Audio } from "expo-av";
+Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
 
-export const playClick = async () => {
-  const { sound } = await Audio.Sound.createAsync(
-    require("../assets/sonidos/click.wav")
-  );
+const click = require("../assets/sonidos/click.wav"); // ajusta la ruta real
+
+export async function playClick() {
+  const { sound } = await Audio.Sound.createAsync(click);
   await sound.playAsync();
-};
+  sound.setOnPlaybackStatusUpdate(
+    (s) => s.isLoaded && s.didJustFinish && sound.unloadAsync(),
+  );
+}

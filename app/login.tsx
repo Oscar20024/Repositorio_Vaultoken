@@ -2,7 +2,7 @@ import { supabase } from "@/service/supabase";
 import { playClick } from "@/utils/sound";
 import { Link, router } from "expo-router";
 import { useState } from "react";
-
+//cambio 11
 import {
   Alert,
   ImageBackground,
@@ -49,7 +49,7 @@ export default function Login() {
       setLoading(false);
       return Alert.alert(
         "Error",
-        "Perfil no encontrado. Intenta cerrar y volver a entrar."
+        "Perfil no encontrado. Intenta cerrar y volver a entrar.",
       );
     }
 
@@ -57,6 +57,7 @@ export default function Login() {
 
     // 3) Todo OK -> entrar a la app
     router.replace("/(tabs)");
+    //   router.replace("/post-login");-->para el video de postlogin.tsx
   };
 
   const onPressLogin = async () => {
@@ -71,7 +72,7 @@ export default function Login() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.title}>🔐 Vaultoken</Text>
+        <Text style={styles.title}>Log in</Text>
 
         <TextInput
           placeholder="Email"
@@ -123,9 +124,10 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: "rgba(0,0,0,0.10)", // 🔥 antes 0.55 (menos oscuro)
     justifyContent: "center",
     padding: 24,
+    paddingTop: 350, // ✅ nuevo: empuja todo hacia abajo (ajusta 60/80/100)
   },
   title: {
     fontSize: 34,
@@ -142,12 +144,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   button: {
-    backgroundColor: "#58CC02",
+    backgroundColor: "#ff751f", // ✅ antes "#58CC02"
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
     marginTop: 10,
   },
+
   buttonText: {
     color: "#fff",
     fontSize: 18,
@@ -160,8 +163,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   registerLink: {
-    color: "#58CC02",
+    color: "#ff751f",
     fontWeight: "bold",
   },
 });
-
