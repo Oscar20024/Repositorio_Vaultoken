@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { StyleSheet, View } from "react-native";
 
-const src = require("../../assets/videos/login.mp4");
+const src = require("../assets/videos/login.mp4");
 
 export default function PostLogin() {
   const player = useVideoPlayer(src, (p) => {

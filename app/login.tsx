@@ -57,7 +57,7 @@ export default function Login() {
 
     // 3) Todo OK -> entrar a la app
     router.replace("/(tabs)");
-    //   router.replace("/post-login");-->para el video de postlogin.tsx
+    //router.replace("/post-login"); //-->para el video de postlogin.tsx
   };
 
   const onPressLogin = async () => {
