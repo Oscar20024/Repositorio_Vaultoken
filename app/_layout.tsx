@@ -1,13 +1,14 @@
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
 export default function RootLayout() {
   return (
-    <Stack
-      initialRouteName="login"   // 👈 ESTA ES LA CLAVE
-      screenOptions={{ headerShown: false }}
-    >
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* pantallas fuera de tabs */}
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
+      <Stack.Screen name="post-login" />
+
+      {/* ✅ grupo de tabs (tu barra) */}
       <Stack.Screen name="(tabs)" />
     </Stack>
   );
