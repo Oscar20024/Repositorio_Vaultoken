@@ -1,6 +1,7 @@
 import { LEVELS } from "@/data/levels";
+import { completeLevel } from "@/storage/progreso"; // ✅
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 //plantilla/pantalla que muestra las preguntas del nivel y maneja la lógica básica
@@ -15,9 +16,16 @@ export default function NivelScreen() {
   const textColor = level?.theme?.text ?? "#111827";
 
   const [i, setI] = useState(0);
+  const [score, setScore] = useState(0); // ✅ aciertos
   const [locked, setLocked] = useState(false);
-  const [ok, setOk] = useState<boolean | null>(null);
 
+  const [ok, setOk] = useState<boolean | null>(null);
+  useEffect(() => {
+    setI(0);
+    setScore(0);
+    setOk(null);
+    setLocked(false);
+  }, [id]);
   const q = useMemo(() => level?.questions?.[i], [level, i]);
 
   if (!level) {
@@ -40,13 +48,27 @@ export default function NivelScreen() {
 
     setOk(correct);
     setLocked(true);
-  };
 
-  const next = () => {
+    if (correct) setScore((v) => v + 1); // ✅ suma 1 si acierta
+  };
+  const next = async () => {
     setOk(null);
     setLocked(false);
-    if (i < level.questions.length - 1) setI((v) => v + 1);
-    else router.back(); // al terminar, vuelves al mapa (luego aquí puedes guardar XP)
+
+    if (i < level.questions.length - 1) {
+      setI((v) => v + 1);
+      return;
+    }
+
+    // ✅ terminó: validar aprobación
+    const total = level.questions.length;
+    const passed = score / total >= 0.7; // 70%
+
+    if (passed) {
+      await completeLevel(level.id); // ✅ desbloquea siguiente
+    }
+
+    router.back();
   };
 
   return (

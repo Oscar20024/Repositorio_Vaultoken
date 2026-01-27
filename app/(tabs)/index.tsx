@@ -1,5 +1,9 @@
+// app/(tabs)/index.tsx
+import { getUnlockedMax, resetProgress } from "@/storage/progreso";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   Image,
   Pressable,
@@ -9,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-// ✅ 4 TROZOS (JPG)
+// ✅ 4 TROZOS (PNG/JPG)
 const mapas = [
   require("../../assets/images/mapa-1.png"),
   require("../../assets/images/mapa-2.png"),
@@ -37,7 +41,7 @@ type Nodo =
   | {
       id: number;
       x: number; // 0..1
-      y: number; // 0..1 (RELATIVO A TODO EL MAPA COMPLETO)
+      y: number; // 0..1 (relativo al mapa completo)
       tipo: "isla";
       islaTipo: IslaTipo;
       w?: number;
@@ -46,7 +50,7 @@ type Nodo =
   | {
       id: number;
       x: number; // 0..1
-      y: number; // 0..1 (RELATIVO A TODO EL MAPA COMPLETO)
+      y: number; // 0..1 (relativo al mapa completo)
       tipo: "punto";
       puntoTipo: PuntoTipo;
       s?: number;
@@ -55,40 +59,99 @@ type Nodo =
 export default function Home() {
   const { width } = useWindowDimensions();
 
+  // ✅ máximo nivel desbloqueado
+  const [unlockedMax, setUnlockedMax] = useState<number>(1);
+
+  // ✅ se ejecuta cada vez que vuelves a esta pantalla
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+
+      (async () => {
+        const max = await getUnlockedMax();
+        if (alive) setUnlockedMax(max);
+      })();
+
+      return () => {
+        alive = false;
+      };
+    }, []),
+  );
+
   // tamaños reales de cada trozo (px)
   const srcs = mapas.map((m) => Image.resolveAssetSource(m));
-
-  // escalamos cada trozo al ancho de pantalla
   const heights = srcs.map((s) => (width * s.height) / s.width);
-
-  // altura total del mapa completo (suma de trozos)
   const totalHeight = heights.reduce((a, b) => a + b, 0);
 
-  // offset top acumulado para posicionar cada trozo
+  // offsets acumulados
   const offsets: number[] = [];
   heights.reduce((acc, h, i) => {
     offsets[i] = acc;
     return acc + h;
   }, 0);
 
-  // 🔧 Ajusta x/y hasta que calce. IMPORTANTE: y es relativo al MAPA COMPLETO (totalHeight)
+  // 🔧 Ajusta tus puntos/islas
   const nodos: Nodo[] = [
-    { id: 1, x: 0.7, y: 0.03, tipo: "isla", islaTipo: "isla1", w: 120, h: 80 },
-    { id: 2, x: 0.5, y: 0.15, tipo: "punto", puntoTipo: "punto1", s: 44 },
-    { id: 3, x: 0.56, y: 0.22, tipo: "punto", puntoTipo: "punto2", s: 44 },
+    { id: 1, x: 0.7, y: 0.022, tipo: "isla", islaTipo: "isla1", w: 120, h: 80 },
+    { id: 2, x: 0.55, y: 0.031, tipo: "punto", puntoTipo: "punto1", s: 44 },
+    { id: 3, x: 0.69, y: 0.033, tipo: "punto", puntoTipo: "punto2", s: 44 },
+    { id: 4, x: 0.79, y: 0.037, tipo: "punto", puntoTipo: "punto1", s: 44 },
+    { id: 5, x: 0.65, y: 0.039, tipo: "punto", puntoTipo: "punto1", s: 44 },
 
-    { id: 4, x: 0.62, y: 0.3, tipo: "isla", islaTipo: "isla2", w: 130, h: 90 },
-    { id: 5, x: 0.58, y: 0.38, tipo: "punto", puntoTipo: "punto1", s: 44 },
+    {
+      id: 6,
+      x: 0.56,
+      y: 0.134,
+      tipo: "isla",
+      islaTipo: "isla3",
+      w: 120,
+      h: 80,
+    },
+    { id: 7, x: 0.43, y: 0.163, tipo: "punto", puntoTipo: "punto2", s: 44 },
 
-    { id: 6, x: 0.4, y: 0.55, tipo: "isla", islaTipo: "isla3", w: 120, h: 80 },
-    { id: 7, x: 0.43, y: 0.63, tipo: "punto", puntoTipo: "punto2", s: 44 },
+    {
+      id: 15,
+      x: 0.43,
+      y: 0.078,
+      tipo: "isla",
+      islaTipo: "isla2",
+      w: 130,
+      h: 90,
+    },
   ];
+
+  const goNivel = (id: number, locked: boolean) => {
+    if (locked) return;
+    router.push({ pathname: "/nivel/[id]", params: { id: String(id) } });
+  };
 
   return (
     <ScrollView>
-      {/* Contenedor gigante con posición relativa */}
       <View style={{ width, height: totalHeight, position: "relative" }}>
-        {/* ✅ Fondo en 4 trozos, ABSOLUTE */}
+        {/* ✅ BOTÓN RESET (testing) */}
+        <Pressable
+          onPress={async () => {
+            await resetProgress(); // borra progreso
+            const max = await getUnlockedMax(); // volverá a 1
+            setUnlockedMax(max);
+          }}
+          style={{
+            position: "absolute",
+            top: 50,
+            right: 12,
+            zIndex: 9999,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 12,
+            backgroundColor: "white",
+            borderWidth: 1,
+            borderColor: "#E5E7EB",
+          }}
+        >
+          <Text style={{ fontWeight: "900" }}>Reset</Text>
+        </Pressable>
+
+        {/* Fondo en 4 trozos */}
         {mapas.map((src, i) => (
           <Image
             key={`mapa-${i}`}
@@ -100,12 +163,14 @@ export default function Home() {
               width,
               height: heights[i],
             }}
-            resizeMode="cover" // "contain" si ves recortes
+            resizeMode="cover"
           />
         ))}
 
-        {/* ✅ Nodos encima */}
+        {/* Nodos encima */}
         {nodos.map((n) => {
+          const locked = n.id > unlockedMax;
+
           if (n.tipo === "isla") {
             const w = n.w ?? 120;
             const h = n.h ?? 80;
@@ -113,18 +178,14 @@ export default function Home() {
             return (
               <Pressable
                 key={`isla-${n.id}`}
-                onPress={() =>
-                  router.push({
-                    pathname: "/nivel/[id]",
-                    params: { id: String(n.id) },
-                  })
-                }
+                onPress={() => goNivel(n.id, locked)}
                 style={{
                   position: "absolute",
                   left: n.x * width - w / 2,
-                  top: n.y * totalHeight - h / 2, // ✅ usa totalHeight
+                  top: n.y * totalHeight - h / 2,
                   width: w,
                   height: h,
+                  opacity: locked ? 0.7 : 1,
                 }}
               >
                 <Image
@@ -141,18 +202,14 @@ export default function Home() {
           return (
             <Pressable
               key={`punto-${n.id}`}
-              onPress={() =>
-                router.push({
-                  pathname: "/nivel/[id]",
-                  params: { id: String(n.id) },
-                })
-              }
+              onPress={() => goNivel(n.id, locked)}
               style={{
                 position: "absolute",
                 left: n.x * width - s / 2,
-                top: n.y * totalHeight - s / 2, // ✅ usa totalHeight
+                top: n.y * totalHeight - s / 2,
                 width: s,
                 height: s,
+                opacity: locked ? 0.7 : 1,
               }}
             >
               <Image
@@ -175,6 +232,21 @@ export default function Home() {
               >
                 {n.id}
               </Text>
+
+              {/* 🔒 candado pequeño a la derecha */}
+              {locked && (
+                <Ionicons
+                  name="lock-closed"
+                  size={14}
+                  color="#111827"
+                  style={{
+                    position: "absolute",
+                    right: -6, // 👈 ajusta aquí si quieres más izquierda/derecha
+                    top: "50%",
+                    marginTop: -7,
+                  }}
+                />
+              )}
             </Pressable>
           );
         })}
