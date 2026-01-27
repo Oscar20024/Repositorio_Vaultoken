@@ -1,7 +1,7 @@
 import { router } from "expo-router";
+import React from "react";
 import {
   Image,
-  ImageBackground,
   Pressable,
   ScrollView,
   Text,
@@ -9,8 +9,13 @@ import {
   View,
 } from "react-native";
 
-const mapa = require("../../assets/images/mapa-niveles.png");
-const { width: iw, height: ih } = Image.resolveAssetSource(mapa);
+// ✅ 4 TROZOS (JPG)
+const mapas = [
+  require("../../assets/images/mapa-1.png"),
+  require("../../assets/images/mapa-2.png"),
+  require("../../assets/images/mapa-3.png"),
+  require("../../assets/images/mapa-4.png"),
+] as const;
 
 // ISLAS
 const islas = {
@@ -19,7 +24,7 @@ const islas = {
   isla3: require("../../assets/images/isla3.png"),
 } as const;
 
-// 2 TIPOS DE PUNTOS (PNG)
+// PUNTOS
 const puntos = {
   punto1: require("../../assets/images/punto1.png"),
   punto2: require("../../assets/images/punto2.png"),
@@ -32,7 +37,7 @@ type Nodo =
   | {
       id: number;
       x: number; // 0..1
-      y: number; // 0..1
+      y: number; // 0..1 (RELATIVO A TODO EL MAPA COMPLETO)
       tipo: "isla";
       islaTipo: IslaTipo;
       w?: number;
@@ -41,89 +46,65 @@ type Nodo =
   | {
       id: number;
       x: number; // 0..1
-      y: number; // 0..1
+      y: number; // 0..1 (RELATIVO A TODO EL MAPA COMPLETO)
       tipo: "punto";
       puntoTipo: PuntoTipo;
-      s?: number; // tamaño (cuadrado)
+      s?: number;
     };
 
 export default function Home() {
   const { width } = useWindowDimensions();
-  const height = (width * ih) / iw;
 
-  // 🔧 Ajusta x/y de puntos y islas hasta que calce con tu mapa
+  // tamaños reales de cada trozo (px)
+  const srcs = mapas.map((m) => Image.resolveAssetSource(m));
+
+  // escalamos cada trozo al ancho de pantalla
+  const heights = srcs.map((s) => (width * s.height) / s.width);
+
+  // altura total del mapa completo (suma de trozos)
+  const totalHeight = heights.reduce((a, b) => a + b, 0);
+
+  // offset top acumulado para posicionar cada trozo
+  const offsets: number[] = [];
+  heights.reduce((acc, h, i) => {
+    offsets[i] = acc;
+    return acc + h;
+  }, 0);
+
+  // 🔧 Ajusta x/y hasta que calce. IMPORTANTE: y es relativo al MAPA COMPLETO (totalHeight)
   const nodos: Nodo[] = [
-    {
-      id: 1,
-      x: 0.7,
-      y: 0.028,
-      tipo: "isla",
-      islaTipo: "isla1",
-      w: 120,
-      h: 80,
-    },
-    { id: 2, x: 0.5, y: 0.3, tipo: "punto", puntoTipo: "punto1", s: 44 },
-    { id: 3, x: 0.56, y: 0.42, tipo: "punto", puntoTipo: "punto2", s: 44 },
+    { id: 1, x: 0.7, y: 0.03, tipo: "isla", islaTipo: "isla1", w: 120, h: 80 },
+    { id: 2, x: 0.5, y: 0.15, tipo: "punto", puntoTipo: "punto1", s: 44 },
+    { id: 3, x: 0.56, y: 0.22, tipo: "punto", puntoTipo: "punto2", s: 44 },
 
-    { id: 20, x: 0.4, y: 0.7, tipo: "isla", islaTipo: "isla3", w: 120, h: 80 },
-    { id: 21, x: 0.43, y: 0.8, tipo: "punto", puntoTipo: "punto2", s: 44 },
-    {
-      id: 17,
-      x: 0.62,
-      y: 0.52,
-      tipo: "isla",
-      islaTipo: "isla2",
-      w: 130,
-      h: 90,
-    },
-    { id: 11, x: 0.58, y: 0.62, tipo: "punto", puntoTipo: "punto1", s: 44 },
-    {
-      id: 15,
-      x: 0.62,
-      y: 0.52,
-      tipo: "isla",
-      islaTipo: "isla2",
-      w: 130,
-      h: 90,
-    },
-    {
-      id: 13,
-      x: 0.62,
-      y: 0.52,
-      tipo: "isla",
-      islaTipo: "isla2",
-      w: 130,
-      h: 90,
-    },
-    {
-      id: 12,
-      x: 0.62,
-      y: 0.52,
-      tipo: "isla",
-      islaTipo: "isla2",
-      w: 130,
-      h: 90,
-    },
-    {
-      id: 11,
-      x: 0.62,
-      y: 0.52,
-      tipo: "isla",
-      islaTipo: "isla2",
-      w: 130,
-      h: 90,
-    },
+    { id: 4, x: 0.62, y: 0.3, tipo: "isla", islaTipo: "isla2", w: 130, h: 90 },
+    { id: 5, x: 0.58, y: 0.38, tipo: "punto", puntoTipo: "punto1", s: 44 },
+
+    { id: 6, x: 0.4, y: 0.55, tipo: "isla", islaTipo: "isla3", w: 120, h: 80 },
+    { id: 7, x: 0.43, y: 0.63, tipo: "punto", puntoTipo: "punto2", s: 44 },
   ];
 
   return (
     <ScrollView>
-      <View style={{ width, height, position: "relative" }}>
-        <ImageBackground
-          source={mapa}
-          style={{ width, height }}
-          resizeMode="stretch"
-        />
+      {/* Contenedor gigante con posición relativa */}
+      <View style={{ width, height: totalHeight, position: "relative" }}>
+        {/* ✅ Fondo en 4 trozos, ABSOLUTE */}
+        {mapas.map((src, i) => (
+          <Image
+            key={`mapa-${i}`}
+            source={src}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: offsets[i],
+              width,
+              height: heights[i],
+            }}
+            resizeMode="cover" // "contain" si ves recortes
+          />
+        ))}
 
+        {/* ✅ Nodos encima */}
         {nodos.map((n) => {
           if (n.tipo === "isla") {
             const w = n.w ?? 120;
@@ -141,7 +122,7 @@ export default function Home() {
                 style={{
                   position: "absolute",
                   left: n.x * width - w / 2,
-                  top: n.y * height - h / 2,
+                  top: n.y * totalHeight - h / 2, // ✅ usa totalHeight
                   width: w,
                   height: h,
                 }}
@@ -149,12 +130,12 @@ export default function Home() {
                 <Image
                   source={islas[n.islaTipo]}
                   style={{ width: "100%", height: "100%" }}
+                  resizeMode="contain"
                 />
               </Pressable>
             );
           }
 
-          // PUNTO PNG + NÚMERO ENCIMA
           const s = n.s ?? 44;
 
           return (
@@ -169,7 +150,7 @@ export default function Home() {
               style={{
                 position: "absolute",
                 left: n.x * width - s / 2,
-                top: n.y * height - s / 2,
+                top: n.y * totalHeight - s / 2, // ✅ usa totalHeight
                 width: s,
                 height: s,
               }}
@@ -177,7 +158,7 @@ export default function Home() {
               <Image
                 source={puntos[n.puntoTipo]}
                 style={{ width: "100%", height: "100%" }}
-                resizeMode="stretch"
+                resizeMode="contain"
               />
 
               <Text
