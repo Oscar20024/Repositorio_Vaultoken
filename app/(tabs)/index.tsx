@@ -2,15 +2,17 @@
 import { getUnlockedMax, resetProgress } from "@/storage/progreso";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import React, { useCallback, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import {
   Image,
   Pressable,
   ScrollView,
   Text,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
 
 // ✅ 4 TROZOS (PNG/JPG)
@@ -32,6 +34,14 @@ const islas = {
 const puntos = {
   punto1: require("../../assets/images/punto1.png"),
   punto2: require("../../assets/images/punto2.png"),
+} as const;
+
+// ✅ ICONOS TOP BAR (los 4 nuevos)
+const topIcons = {
+  servidor: require("../../assets/images/servidor.png"),
+  ia: require("../../assets/images/ia.png"),
+  virus: require("../../assets/images/virus.png"),
+  simulador: require("../../assets/images/simulador.png"),
 } as const;
 
 type IslaTipo = keyof typeof islas;
@@ -58,7 +68,7 @@ type Nodo =
 
 export default function Home() {
   const { width } = useWindowDimensions();
-
+  const insets = useSafeAreaInsets();
   // ✅ máximo nivel desbloqueado
   const [unlockedMax, setUnlockedMax] = useState<number>(1);
 
@@ -66,12 +76,10 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       let alive = true;
-
       (async () => {
         const max = await getUnlockedMax();
         if (alive) setUnlockedMax(max);
       })();
-
       return () => {
         alive = false;
       };
@@ -97,7 +105,6 @@ export default function Home() {
     { id: 3, x: 0.69, y: 0.033, tipo: "punto", puntoTipo: "punto2", s: 44 },
     { id: 4, x: 0.79, y: 0.037, tipo: "punto", puntoTipo: "punto1", s: 44 },
     { id: 5, x: 0.65, y: 0.039, tipo: "punto", puntoTipo: "punto1", s: 44 },
-
     {
       id: 6,
       x: 0.56,
@@ -108,7 +115,6 @@ export default function Home() {
       h: 80,
     },
     { id: 7, x: 0.43, y: 0.163, tipo: "punto", puntoTipo: "punto2", s: 44 },
-
     {
       id: 15,
       x: 0.43,
@@ -125,19 +131,94 @@ export default function Home() {
     router.push({ pathname: "/nivel/[id]", params: { id: String(id) } });
   };
 
+  // ✅ TOP NAV (fuera de tabs)
+  const TOP = {
+    servidor: "/tu-servidor",
+    ia: "/simulador-ia",
+    virus: "/virus",
+    simulador: "/simulador",
+  } as const;
+
+  type TopKey = keyof typeof TOP;
+
+  const goTop = (key: TopKey) => {
+    router.push(TOP[key] as Href);
+  };
+
   return (
     <ScrollView>
       <View style={{ width, height: totalHeight, position: "relative" }}>
+        {/* ✅ TOP BAR INVISIBLE (solo se ven iconos) */}
+        <View
+          style={{
+            position: "absolute",
+            top: insets.top + 5,
+            left: 12,
+            right: 12,
+            zIndex: 10000,
+            backgroundColor: "transparent",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Pressable
+            onPress={() => goTop("servidor")}
+            style={{ alignItems: "center" }}
+          >
+            <Image
+              source={topIcons.servidor}
+              style={{ width: 34, height: 34, resizeMode: "contain" }}
+            />
+            <Text style={{ fontSize: 11, fontWeight: "800" }}>Tu Servidor</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => goTop("ia")}
+            style={{ alignItems: "center" }}
+          >
+            <Image
+              source={topIcons.ia}
+              style={{ width: 34, height: 34, resizeMode: "contain" }}
+            />
+            <Text style={{ fontSize: 11, fontWeight: "800" }}>
+              Simulador IA
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => goTop("virus")}
+            style={{ alignItems: "center" }}
+          >
+            <Image
+              source={topIcons.virus}
+              style={{ width: 34, height: 34, resizeMode: "contain" }}
+            />
+            <Text style={{ fontSize: 11, fontWeight: "800" }}>Virus</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => goTop("simulador")}
+            style={{ alignItems: "center" }}
+          >
+            <Image
+              source={topIcons.simulador}
+              style={{ width: 34, height: 34, resizeMode: "contain" }}
+            />
+            <Text style={{ fontSize: 11, fontWeight: "800" }}>Simulador</Text>
+          </Pressable>
+        </View>
+
         {/* ✅ BOTÓN RESET (testing) */}
         <Pressable
           onPress={async () => {
-            await resetProgress(); // borra progreso
-            const max = await getUnlockedMax(); // volverá a 1
+            await resetProgress();
+            const max = await getUnlockedMax();
             setUnlockedMax(max);
           }}
           style={{
             position: "absolute",
-            top: 50,
+            top: 120,
             right: 12,
             zIndex: 9999,
             paddingVertical: 8,
@@ -241,7 +322,7 @@ export default function Home() {
                   color="#111827"
                   style={{
                     position: "absolute",
-                    right: -6, // 👈 ajusta aquí si quieres más izquierda/derecha
+                    right: -6,
                     top: "50%",
                     marginTop: -7,
                   }}
