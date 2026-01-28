@@ -1,48 +1,29 @@
 // app/(tabs)/index.tsx
+import {
+  ISLAS as islas,
+  MAPAS as mapas,
+  PUNTOS as puntos,
+  TOP_ICONS as topIcons,
+} from "@/app/assets";
 import { getUnlockedMax, resetProgress } from "@/storage/progreso";
+import { playClick } from "@/utils/sound";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { Asset } from "expo-asset";
 import { router, type Href } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
   Text,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
-
-// ✅ 4 TROZOS (PNG/JPG)
-const mapas = [
-  require("../../assets/images/mapa-1.png"),
-  require("../../assets/images/mapa-2.png"),
-  require("../../assets/images/mapa-3.png"),
-  require("../../assets/images/mapa-4.png"),
-] as const;
-
-// ISLAS
-const islas = {
-  isla1: require("../../assets/images/isla1.png"),
-  isla2: require("../../assets/images/isla2.png"),
-  isla3: require("../../assets/images/isla3.png"),
-} as const;
-
-// PUNTOS
-const puntos = {
-  punto1: require("../../assets/images/punto1.png"),
-  punto2: require("../../assets/images/punto2.png"),
-} as const;
-
-// ✅ ICONOS TOP BAR (los 4 nuevos)
-const topIcons = {
-  servidor: require("../../assets/images/servidor.png"),
-  ia: require("../../assets/images/ia.png"),
-  virus: require("../../assets/images/virus.png"),
-  simulador: require("../../assets/images/simulador.png"),
-} as const;
 
 type IslaTipo = keyof typeof islas;
 type PuntoTipo = keyof typeof puntos;
@@ -66,11 +47,51 @@ type Nodo =
       s?: number;
     };
 
+// ✅ lista de assets para precargar (mapas + islas + puntos + topIcons)
+const ASSETS_TO_PRELOAD = [
+  ...mapas,
+  islas.isla1,
+  islas.isla2,
+  islas.isla3,
+  puntos.punto1,
+  puntos.punto2,
+  topIcons.servidor,
+  topIcons.ia,
+  topIcons.virus,
+  topIcons.simulador,
+] as const;
+
+async function preloadIndexAssets() {
+  await Promise.all(
+    ASSETS_TO_PRELOAD.map((m) => Asset.fromModule(m).downloadAsync()),
+  );
+}
+
 export default function Home() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+
   // ✅ máximo nivel desbloqueado
   const [unlockedMax, setUnlockedMax] = useState<number>(1);
+
+  // ✅ preload interno (backup)
+  const [assetsReady, setAssetsReady] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        await preloadIndexAssets();
+      } catch (e) {
+        // si falla igual no bloquees
+      } finally {
+        if (alive) setAssetsReady(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // ✅ se ejecuta cada vez que vuelves a esta pantalla
   useFocusEffect(
@@ -86,17 +107,29 @@ export default function Home() {
     }, []),
   );
 
-  // tamaños reales de cada trozo (px)
-  const srcs = mapas.map((m) => Image.resolveAssetSource(m));
-  const heights = srcs.map((s) => (width * s.height) / s.width);
-  const totalHeight = heights.reduce((a, b) => a + b, 0);
+  // ✅ Evita cálculos si assets aún no listos
+  const { heights, totalHeight, offsets } = useMemo(() => {
+    if (!assetsReady) {
+      return { srcs: [], heights: [], totalHeight: 0, offsets: [] as number[] };
+    }
 
-  // offsets acumulados
-  const offsets: number[] = [];
-  heights.reduce((acc, h, i) => {
-    offsets[i] = acc;
-    return acc + h;
-  }, 0);
+    const _srcs = mapas.map((m) => Image.resolveAssetSource(m));
+    const _heights = _srcs.map((s) => (width * s.height) / s.width);
+    const _totalHeight = _heights.reduce((a, b) => a + b, 0);
+
+    const _offsets: number[] = [];
+    _heights.reduce((acc, h, i) => {
+      _offsets[i] = acc;
+      return acc + h;
+    }, 0);
+
+    return {
+      srcs: _srcs,
+      heights: _heights,
+      totalHeight: _totalHeight,
+      offsets: _offsets,
+    };
+  }, [assetsReady, width]);
 
   // 🔧 Ajusta tus puntos/islas
   const nodos: Nodo[] = [
@@ -126,8 +159,9 @@ export default function Home() {
     },
   ];
 
-  const goNivel = (id: number, locked: boolean) => {
+  const goNivel = async (id: number, locked: boolean) => {
     if (locked) return;
+    await playClick();
     router.push({ pathname: "/nivel/[id]", params: { id: String(id) } });
   };
 
@@ -141,9 +175,29 @@ export default function Home() {
 
   type TopKey = keyof typeof TOP;
 
-  const goTop = (key: TopKey) => {
+  const goTop = async (key: TopKey) => {
+    await playClick();
     router.push(TOP[key] as Href);
   };
+
+  // ✅ Loading simple mientras carga assets
+  if (!assetsReady) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "white",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12, fontWeight: "800" }}>
+          Cargando mapa...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView>

@@ -13,7 +13,7 @@ export default function TuServidor() {
         onPress={() => router.back()}
         style={{
           padding: 15,
-          marginTop: insets.top - 65, // 👈 sube/baja aquí
+          marginTop: insets.top - 65, // sube/baja aquí
           alignSelf: "flex-start",
         }}
       >
