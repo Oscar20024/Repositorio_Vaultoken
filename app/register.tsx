@@ -1,3 +1,4 @@
+import { getSupabase } from "@/service/supabase";
 import { playClick } from "@/utils/sound";
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
@@ -10,7 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { supabase } from "../service/supabase";
+const supabase = getSupabase();
 
 export default function Register() {
   const [email, setEmail] = useState("");

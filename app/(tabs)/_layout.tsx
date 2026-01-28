@@ -1,9 +1,10 @@
-import { supabase } from "@/service/supabase";
+import { getSupabase } from "@/service/supabase";
 import { playClick } from "@/utils/sound";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs, router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Pressable } from "react-native";
+const supabase = getSupabase();
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";

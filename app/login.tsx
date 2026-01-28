@@ -1,4 +1,6 @@
-import { supabase } from "@/service/supabase";
+import { getSupabase } from "@/service/supabase";
+const supabase = getSupabase();
+
 import { playClick } from "@/utils/sound";
 import { Link, router } from "expo-router";
 import { useState } from "react";

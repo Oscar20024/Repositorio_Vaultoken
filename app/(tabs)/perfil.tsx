@@ -1,4 +1,4 @@
-import { supabase } from "@/service/supabase";
+import { getSupabase } from "@/service/supabase";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -10,13 +10,14 @@ import {
   Text,
   View,
 } from "react-native";
+const supabase = getSupabase();
 
 type ProfileRow = {
   id: string;
   username: string | null;
   xp: number | null;
   racha: number | null; // si ya cambiaste a racha, abajo te digo qué cambiar
-  nivel: number | null;  // si ya cambiaste a nivel, abajo te digo qué cambiar
+  nivel: number | null; // si ya cambiaste a nivel, abajo te digo qué cambiar
 };
 
 export default function Perfil() {
@@ -87,7 +88,11 @@ export default function Perfil() {
   }
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={s.screen}
+      contentContainerStyle={s.content}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header */}
       <View style={s.header}>
         <View style={s.avatar}>
@@ -100,7 +105,12 @@ export default function Perfil() {
 
           <View style={s.progressWrap}>
             <View style={s.progressBar}>
-              <View style={[s.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+              <View
+                style={[
+                  s.progressFill,
+                  { width: `${Math.round(progress * 100)}%` },
+                ]}
+              />
             </View>
             <Text style={s.progressText}>
               {xp} XP / {levelGoal} XP
@@ -160,7 +170,12 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#0B1220" },
   content: { padding: 18, paddingTop: 18 },
 
-  loadingWrap: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0B1220" },
+  loadingWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#0B1220",
+  },
   loadingText: { marginTop: 10, color: "rgba(255,255,255,0.75)" },
 
   header: {
@@ -198,7 +213,12 @@ const s = StyleSheet.create({
     backgroundColor: "#58CC02",
     borderRadius: 999,
   },
-  progressText: { marginTop: 6, color: "rgba(255,255,255,0.75)", fontSize: 12, fontWeight: "700" },
+  progressText: {
+    marginTop: 6,
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 12,
+    fontWeight: "700",
+  },
 
   sectionTitle: {
     color: "white",
@@ -220,7 +240,12 @@ const s = StyleSheet.create({
   },
   statIcon: { fontSize: 20, marginBottom: 6 },
   statValue: { color: "white", fontWeight: "900", fontSize: 18 },
-  statLabel: { color: "rgba(255,255,255,0.7)", marginTop: 2, fontWeight: "700", fontSize: 12 },
+  statLabel: {
+    color: "rgba(255,255,255,0.7)",
+    marginTop: 2,
+    fontWeight: "700",
+    fontSize: 12,
+  },
 
   actionBtn: {
     backgroundColor: "#121B33",
@@ -232,7 +257,10 @@ const s = StyleSheet.create({
     marginBottom: 10,
   },
   actionBtnText: { color: "white", fontWeight: "900" },
-  dangerBtn: { backgroundColor: "rgba(239,68,68,0.12)", borderColor: "rgba(239,68,68,0.25)" },
+  dangerBtn: {
+    backgroundColor: "rgba(239,68,68,0.12)",
+    borderColor: "rgba(239,68,68,0.25)",
+  },
   dangerText: { color: "#FCA5A5" },
 
   tip: {
