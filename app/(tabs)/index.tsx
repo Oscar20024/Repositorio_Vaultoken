@@ -57,7 +57,7 @@ const ASSETS_TO_PRELOAD = [
   puntos.punto1,
   puntos.punto2,
   topIcons.servidor,
-  topIcons.ia,
+  topIcons.teoria,
   topIcons.virus,
   topIcons.simulador,
 ] as const;
@@ -169,7 +169,7 @@ export default function Home() {
   // ✅ TOP NAV (fuera de tabs)
   const TOP = {
     servidor: "/tu-servidor",
-    ia: "/simulador-ia",
+    teoria: "/teoria",
     virus: "/virus",
     simulador: "/simulador",
   } as const;
@@ -229,16 +229,14 @@ export default function Home() {
           </Pressable>
 
           <Pressable
-            onPress={() => goTop("ia")}
+            onPress={() => goTop("teoria")}
             style={{ alignItems: "center" }}
           >
             <Image
-              source={topIcons.ia}
+              source={topIcons.teoria}
               style={{ width: 34, height: 34, resizeMode: "contain" }}
             />
-            <Text style={{ fontSize: 11, fontWeight: "800" }}>
-              Simulador IA
-            </Text>
+            <Text style={{ fontSize: 11, fontWeight: "800" }}>Teoría</Text>
           </Pressable>
 
           <Pressable

@@ -19,7 +19,7 @@ export const PUNTOS = {
 
 export const TOP_ICONS = {
   servidor: require("../assets/images/servidor.png"),
-  ia: require("../assets/images/ia.png"),
+  teoria: require("../assets/images/teoria.png"),
   virus: require("../assets/images/virus.png"),
   simulador: require("../assets/images/simulador.png"),
 } as const;
@@ -33,7 +33,7 @@ export const PRELOAD = [
   PUNTOS.punto1,
   PUNTOS.punto2,
   TOP_ICONS.servidor,
-  TOP_ICONS.ia,
+  TOP_ICONS.teoria,
   TOP_ICONS.virus,
   TOP_ICONS.simulador,
 ] as const;
