@@ -15,6 +15,7 @@ import { router, type Href } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { resetProfileProgressDb } from "@/storage/progresoDb";
 import {
   ActivityIndicator,
   Image,
@@ -266,9 +267,19 @@ export default function Home() {
         {/* ✅ BOTÓN RESET (testing) */}
         <Pressable
           onPress={async () => {
-            await resetProgress();
-            const max = await getUnlockedMax();
-            setUnlockedMax(max);
+            try {
+              // 1) Reset local (niveles desbloqueados en el celular)
+              await resetProgress();
+
+              // 2) Reset BD (xp/racha/nivel/last_play_date del usuario)
+              await resetProfileProgressDb();
+
+              // 3) Refrescar lo que muestra tu mapa
+              const max = await getUnlockedMax();
+              setUnlockedMax(max);
+            } catch (e) {
+              console.log("Reset error:", e);
+            }
           }}
           style={{
             position: "absolute",

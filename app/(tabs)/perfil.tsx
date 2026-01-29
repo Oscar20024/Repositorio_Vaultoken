@@ -1,6 +1,9 @@
 import { getSupabase } from "@/service/supabase";
+import { resetProgress } from "@/storage/progreso"; // tu reset local
+import { resetProfileProgressDb } from "@/storage/progresoDb"; // tu reset en BD
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -61,9 +64,11 @@ export default function Perfil() {
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, []),
+  );
 
   const logout = async () => {
     await supabase.auth.signOut();
@@ -86,6 +91,19 @@ export default function Perfil() {
       </View>
     );
   }
+  const resetTest = async () => {
+    try {
+      setLoading(true);
+      await resetProgress(); // ✅ borra progreso local
+      await resetProfileProgressDb(); // ✅ resetea XP/racha/nivel en BD
+      await fetchProfile(); // ✅ refresca UI
+      Alert.alert("Listo", "Reinicio de test aplicado");
+    } catch (e: any) {
+      Alert.alert("Error", e?.message ?? "No se pudo reiniciar");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ScrollView

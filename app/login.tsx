@@ -1,6 +1,5 @@
 import { getSupabase } from "@/service/supabase";
-const supabase = getSupabase();
-
+import { syncStreakDb } from "@/storage/progresoDb";
 import { playClick } from "@/utils/sound";
 import Ionicons from "@expo/vector-icons/Ionicons"; // ✅ OJITO
 import { Link, router } from "expo-router";
@@ -14,6 +13,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+const supabase = getSupabase();
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -55,6 +55,7 @@ export default function Login() {
     }
 
     setLoading(false);
+    await syncStreakDb();
     router.replace("/post-login");
   };
 
