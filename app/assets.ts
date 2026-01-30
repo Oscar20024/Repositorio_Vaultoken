@@ -18,10 +18,10 @@ export const PUNTOS = {
 } as const;
 
 export const TOP_ICONS = {
-  servidor: require("../assets/images/servidor.png"),
-  teoria: require("../assets/images/teoria.png"),
-  virus: require("../assets/images/virus.png"),
-  simulador: require("../assets/images/simulador.png"),
+  servidor: require("../assets/images/servidor.gif"),
+  teoria: require("../assets/images/teoria.gif"),
+  virus: require("../assets/images/virus.gif"),
+  simulador: require("../assets/images/simulador.gif"),
   phishing: require("../assets/images/phishing.gif"),
 } as const;
 

@@ -218,9 +218,9 @@ export default function Home() {
           <View
             style={{
               position: "absolute",
-              top: insets.top + 5,
-              left: 12,
-              right: 12,
+              top: insets.top - 11,
+              left: 15,
+              right: 15,
               zIndex: 10000,
               backgroundColor: "transparent",
               flexDirection: "row",
@@ -234,10 +234,10 @@ export default function Home() {
             >
               <Image
                 source={topIcons.servidor}
-                style={{ width: 34, height: 34, resizeMode: "contain" }}
+                style={{ width: 54, height: 54, resizeMode: "contain" }}
               />
               <Text style={{ fontSize: 11, fontWeight: "800" }}>
-                Tu Servidor
+                Tus Servidores
               </Text>
             </Pressable>
 
@@ -247,7 +247,7 @@ export default function Home() {
             >
               <Image
                 source={topIcons.teoria}
-                style={{ width: 34, height: 34, resizeMode: "contain" }}
+                style={{ width: 54, height: 54, resizeMode: "contain" }}
               />
               <Text style={{ fontSize: 11, fontWeight: "800" }}>Teoría</Text>
             </Pressable>
@@ -258,7 +258,7 @@ export default function Home() {
             >
               <Image
                 source={topIcons.virus}
-                style={{ width: 34, height: 34, resizeMode: "contain" }}
+                style={{ width: 54, height: 54, resizeMode: "contain" }}
               />
               <Text style={{ fontSize: 11, fontWeight: "800" }}>Virus</Text>
             </Pressable>
@@ -269,7 +269,7 @@ export default function Home() {
             >
               <Image
                 source={topIcons.simulador}
-                style={{ width: 34, height: 34, resizeMode: "contain" }}
+                style={{ width: 54, height: 54, resizeMode: "contain" }}
               />
               <Text style={{ fontSize: 11, fontWeight: "800" }}>Simulador</Text>
             </Pressable>
