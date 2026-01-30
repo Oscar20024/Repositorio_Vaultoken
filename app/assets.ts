@@ -22,6 +22,7 @@ export const TOP_ICONS = {
   teoria: require("../assets/images/teoria.png"),
   virus: require("../assets/images/virus.png"),
   simulador: require("../assets/images/simulador.png"),
+  phishing: require("../assets/images/phishing.gif"),
 } as const;
 
 // ✅ lista única para precargar
@@ -36,4 +37,5 @@ export const PRELOAD = [
   TOP_ICONS.teoria,
   TOP_ICONS.virus,
   TOP_ICONS.simulador,
+  TOP_ICONS.phishing,
 ] as const;

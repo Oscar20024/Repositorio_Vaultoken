@@ -49,8 +49,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#e7f0f1",
-        tabBarInactiveTintColor: "#888",
+        tabBarActiveTintColor: "#1F2937",
+        tabBarInactiveTintColor: "#1F2937",
         // opcional: si tu barra es clara, pon fondo oscuro; si es clara, quita esto
         // tabBarStyle: { backgroundColor: "#111" },
       }}
@@ -113,13 +113,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
         }}
       />
-
-      {/* <Tabs.Screen
-        name="post-login"
-        options={{
-          href: null,
-        }}
-      /> */}
     </Tabs>
   );
 }

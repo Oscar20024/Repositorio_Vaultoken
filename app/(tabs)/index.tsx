@@ -1,21 +1,22 @@
 // app/(tabs)/index.tsx
+
 import {
   ISLAS as islas,
   MAPAS as mapas,
   PUNTOS as puntos,
   TOP_ICONS as topIcons,
 } from "@/app/assets";
-import { getUnlockedMax, resetProgress } from "@/storage/progreso";
-import { playClick } from "@/utils/sound";
 
+import { hasPhishingBadge, unlockPhishingNow } from "@/storage/phishing";
+//unlockPhishingNow para reset en phishing.ts
+import { getUnlockedMax, resetProgress } from "@/storage/progreso";
+import { resetProfileProgressDb } from "@/storage/progresoDb";
+import { playClick } from "@/utils/sound";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Asset } from "expo-asset";
 import { router, type Href } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { resetProfileProgressDb } from "@/storage/progresoDb";
 import {
   ActivityIndicator,
   Image,
@@ -25,6 +26,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type IslaTipo = keyof typeof islas;
 type PuntoTipo = keyof typeof puntos;
@@ -60,6 +62,7 @@ const ASSETS_TO_PRELOAD = [
   topIcons.teoria,
   topIcons.virus,
   topIcons.simulador,
+  topIcons.phishing,
 ] as const;
 
 async function preloadIndexAssets() {
@@ -71,6 +74,13 @@ async function preloadIndexAssets() {
 export default function Home() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  // ✅ phishing badge
+  const [phBadge, setPhBadge] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      (async () => setPhBadge(await hasPhishingBadge()))();
+    }, []),
+  );
 
   // ✅ máximo nivel desbloqueado
   const [unlockedMax, setUnlockedMax] = useState<number>(1);
@@ -201,200 +211,267 @@ export default function Home() {
   }
 
   return (
-    <ScrollView>
-      <View style={{ width, height: totalHeight, position: "relative" }}>
-        {/* ✅ TOP BAR INVISIBLE (solo se ven iconos) */}
-        <View
-          style={{
-            position: "absolute",
-            top: insets.top + 5,
-            left: 12,
-            right: 12,
-            zIndex: 10000,
-            backgroundColor: "transparent",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Pressable
-            onPress={() => goTop("servidor")}
-            style={{ alignItems: "center" }}
-          >
-            <Image
-              source={topIcons.servidor}
-              style={{ width: 34, height: 34, resizeMode: "contain" }}
-            />
-            <Text style={{ fontSize: 11, fontWeight: "800" }}>Tu Servidor</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => goTop("teoria")}
-            style={{ alignItems: "center" }}
-          >
-            <Image
-              source={topIcons.teoria}
-              style={{ width: 34, height: 34, resizeMode: "contain" }}
-            />
-            <Text style={{ fontSize: 11, fontWeight: "800" }}>Teoría</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => goTop("virus")}
-            style={{ alignItems: "center" }}
-          >
-            <Image
-              source={topIcons.virus}
-              style={{ width: 34, height: 34, resizeMode: "contain" }}
-            />
-            <Text style={{ fontSize: 11, fontWeight: "800" }}>Virus</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => goTop("simulador")}
-            style={{ alignItems: "center" }}
-          >
-            <Image
-              source={topIcons.simulador}
-              style={{ width: 34, height: 34, resizeMode: "contain" }}
-            />
-            <Text style={{ fontSize: 11, fontWeight: "800" }}>Simulador</Text>
-          </Pressable>
-        </View>
-
-        {/* ✅ BOTÓN RESET (testing) */}
-        <Pressable
-          onPress={async () => {
-            try {
-              // 1) Reset local (niveles desbloqueados en el celular)
-              await resetProgress();
-
-              // 2) Reset BD (xp/racha/nivel/last_play_date del usuario)
-              await resetProfileProgressDb();
-
-              // 3) Refrescar lo que muestra tu mapa
-              const max = await getUnlockedMax();
-              setUnlockedMax(max);
-            } catch (e) {
-              console.log("Reset error:", e);
-            }
-          }}
-          style={{
-            position: "absolute",
-            top: 120,
-            right: 12,
-            zIndex: 9999,
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-            borderRadius: 12,
-            backgroundColor: "white",
-            borderWidth: 1,
-            borderColor: "#E5E7EB",
-          }}
-        >
-          <Text style={{ fontWeight: "900" }}>Reset</Text>
-        </Pressable>
-
-        {/* Fondo en 4 trozos */}
-        {mapas.map((src, i) => (
-          <Image
-            key={`mapa-${i}`}
-            source={src}
+    <View style={{ flex: 1 }}>
+      <ScrollView>
+        <View style={{ width, height: totalHeight, position: "relative" }}>
+          {/* ✅ TOP BAR INVISIBLE (solo se ven iconos) */}
+          <View
             style={{
               position: "absolute",
-              left: 0,
-              top: offsets[i],
-              width,
-              height: heights[i],
+              top: insets.top + 5,
+              left: 12,
+              right: 12,
+              zIndex: 10000,
+              backgroundColor: "transparent",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
-            resizeMode="cover"
-          />
-        ))}
+          >
+            <Pressable
+              onPress={() => goTop("servidor")}
+              style={{ alignItems: "center" }}
+            >
+              <Image
+                source={topIcons.servidor}
+                style={{ width: 34, height: 34, resizeMode: "contain" }}
+              />
+              <Text style={{ fontSize: 11, fontWeight: "800" }}>
+                Tu Servidor
+              </Text>
+            </Pressable>
 
-        {/* Nodos encima */}
-        {nodos.map((n) => {
-          const locked = n.id > unlockedMax;
+            <Pressable
+              onPress={() => goTop("teoria")}
+              style={{ alignItems: "center" }}
+            >
+              <Image
+                source={topIcons.teoria}
+                style={{ width: 34, height: 34, resizeMode: "contain" }}
+              />
+              <Text style={{ fontSize: 11, fontWeight: "800" }}>Teoría</Text>
+            </Pressable>
 
-          if (n.tipo === "isla") {
-            const w = n.w ?? 120;
-            const h = n.h ?? 80;
+            <Pressable
+              onPress={() => goTop("virus")}
+              style={{ alignItems: "center" }}
+            >
+              <Image
+                source={topIcons.virus}
+                style={{ width: 34, height: 34, resizeMode: "contain" }}
+              />
+              <Text style={{ fontSize: 11, fontWeight: "800" }}>Virus</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => goTop("simulador")}
+              style={{ alignItems: "center" }}
+            >
+              <Image
+                source={topIcons.simulador}
+                style={{ width: 34, height: 34, resizeMode: "contain" }}
+              />
+              <Text style={{ fontSize: 11, fontWeight: "800" }}>Simulador</Text>
+            </Pressable>
+          </View>
+
+          {/* ✅ BOTÓN RESET (testing) */}
+          <Pressable
+            onPress={async () => {
+              try {
+                await resetProgress();
+                await resetProfileProgressDb();
+
+                // ✅ phishing: listo ahora + vuelve a la 1ra lección
+                await unlockPhishingNow(true);
+                setPhBadge(await hasPhishingBadge());
+
+                const max = await getUnlockedMax();
+                setUnlockedMax(max);
+              } catch (e) {
+                console.log("Reset error:", e);
+              }
+            }}
+            style={{
+              position: "absolute",
+              top: 120,
+              right: 12,
+              zIndex: 9999,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              backgroundColor: "white",
+              borderWidth: 1,
+              borderColor: "#E5E7EB",
+            }}
+          >
+            <Text style={{ fontWeight: "900" }}>Reset</Text>
+          </Pressable>
+
+          {/* Fondo en 4 trozos */}
+          {mapas.map((src, i) => (
+            <Image
+              key={`mapa-${i}`}
+              source={src}
+              style={{
+                position: "absolute",
+                left: 0,
+                top: offsets[i],
+                width,
+                height: heights[i],
+              }}
+              resizeMode="cover"
+            />
+          ))}
+
+          {/* Nodos encima */}
+          {nodos.map((n) => {
+            const locked = n.id > unlockedMax;
+
+            if (n.tipo === "isla") {
+              const w = n.w ?? 120;
+              const h = n.h ?? 80;
+
+              return (
+                <Pressable
+                  key={`isla-${n.id}`}
+                  onPress={() => goNivel(n.id, locked)}
+                  style={{
+                    position: "absolute",
+                    left: n.x * width - w / 2,
+                    top: n.y * totalHeight - h / 2,
+                    width: w,
+                    height: h,
+                    opacity: locked ? 0.7 : 1,
+                  }}
+                >
+                  <Image
+                    source={islas[n.islaTipo]}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+              );
+            }
+
+            const s = n.s ?? 44;
 
             return (
               <Pressable
-                key={`isla-${n.id}`}
+                key={`punto-${n.id}`}
                 onPress={() => goNivel(n.id, locked)}
                 style={{
                   position: "absolute",
-                  left: n.x * width - w / 2,
-                  top: n.y * totalHeight - h / 2,
-                  width: w,
-                  height: h,
+                  left: n.x * width - s / 2,
+                  top: n.y * totalHeight - s / 2,
+                  width: s,
+                  height: s,
                   opacity: locked ? 0.7 : 1,
                 }}
               >
                 <Image
-                  source={islas[n.islaTipo]}
+                  source={puntos[n.puntoTipo]}
                   style={{ width: "100%", height: "100%" }}
                   resizeMode="contain"
                 />
-              </Pressable>
-            );
-          }
 
-          const s = n.s ?? 44;
-
-          return (
-            <Pressable
-              key={`punto-${n.id}`}
-              onPress={() => goNivel(n.id, locked)}
-              style={{
-                position: "absolute",
-                left: n.x * width - s / 2,
-                top: n.y * totalHeight - s / 2,
-                width: s,
-                height: s,
-                opacity: locked ? 0.7 : 1,
-              }}
-            >
-              <Image
-                source={puntos[n.puntoTipo]}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="contain"
-              />
-
-              <Text
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  width: "100%",
-                  height: "100%",
-                  textAlign: "center",
-                  textAlignVertical: "center",
-                  fontWeight: "900",
-                }}
-              >
-                {n.id}
-              </Text>
-
-              {/* 🔒 candado pequeño a la derecha */}
-              {locked && (
-                <Ionicons
-                  name="lock-closed"
-                  size={14}
-                  color="#111827"
+                <Text
                   style={{
                     position: "absolute",
-                    right: -6,
-                    top: "50%",
-                    marginTop: -7,
+                    left: 0,
+                    top: 0,
+                    width: "100%",
+                    height: "100%",
+                    textAlign: "center",
+                    textAlignVertical: "center",
+                    fontWeight: "900",
                   }}
-                />
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
+                >
+                  {n.id}
+                </Text>
+
+                {/* 🔒 candado pequeño a la derecha */}
+                {locked && (
+                  <Ionicons
+                    name="lock-closed"
+                    size={14}
+                    color="#111827"
+                    style={{
+                      position: "absolute",
+                      right: -6,
+                      top: "50%",
+                      marginTop: -7,
+                    }}
+                  />
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </ScrollView>
+
+      {/* ✅ BURBUJA FLOTANTE (FIJA, NO SCROLLEA) */}
+      <Pressable
+        onPress={async () => {
+          await playClick();
+          router.push("../phishing");
+        }}
+        style={{
+          position: "absolute",
+          right: 305, // X
+          bottom: 390, // Y
+          zIndex: 99999,
+        }}
+      >
+        <View
+          style={{
+            width: 67, //TAMAÑO DE LA BURBUJA
+            height: 67, //TAMAÑO DE LA BURBUJA
+            borderRadius: 45,
+            overflow: "hidden",
+            borderWidth: 1,
+            borderColor: "white",
+            backgroundColor: "white",
+            elevation: 6,
+            shadowOpacity: 0.2,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 3 },
+          }}
+        >
+          <Image
+            source={topIcons.phishing}
+            style={{
+              width: "140%",
+              height: "140%",
+              marginLeft: "-15%",
+              marginTop: "-8%",
+            }}
+            resizeMode="cover"
+          />
+        </View>
+
+        {/* 🔴 badge "1" */}
+        {phBadge && (
+          <View
+            style={{
+              position: "absolute",
+              right: 2,
+              top: 2,
+              minWidth: 18,
+              height: 18,
+              borderRadius: 9,
+              backgroundColor: "#EF4444",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 5,
+            }}
+          >
+            <Text style={{ color: "white", fontWeight: "900", fontSize: 12 }}>
+              1
+            </Text>
+          </View>
+        )}
+      </Pressable>
+    </View>
   );
 }
