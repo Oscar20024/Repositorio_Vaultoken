@@ -4,12 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
 import {
-    Platform,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    Text,
-    View,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Text,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -27,7 +27,7 @@ export default function PhishingLesson() {
         style={{
           flex: 1,
           backgroundColor: "white",
-          padding: 16,
+          padding: 18,
           paddingTop: top + 50,
         }}
       >
